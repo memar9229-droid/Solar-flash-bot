@@ -1,12 +1,9 @@
-"""
-⊙ SOLAR SIGNAL BOT — by Solar Flash
-Elite Solana memecoin intelligence terminal.
-"""
 import logging
+import asyncio
 from telegram import Update
 from telegram.ext import (
-    Application, CommandHandler, MessageHandler,
-    filters, ContextTypes
+    ApplicationBuilder, CommandHandler, 
+    MessageHandler, filters, ContextTypes
 )
 from config import BOT_TOKEN
 from handlers import (
@@ -20,8 +17,12 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-def main():
-    app = Application.builder().token(BOT_TOKEN).build()
+async def main():
+    app = (
+        ApplicationBuilder()
+        .token(BOT_TOKEN)
+        .build()
+    )
 
     app.add_handler(CommandHandler("start",   cmd_start))
     app.add_handler(CommandHandler("help",    cmd_help))
@@ -33,7 +34,13 @@ def main():
     ))
 
     log.info("⊙ Solar Signal Bot is live...")
-    app.run_polling(drop_pending_updates=True)
+    
+    await app.initialize()
+    await app.start()
+    await app.updater.start_polling(drop_pending_updates=True)
+    
+    # Keep running
+    await asyncio.Event().wait()
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
